@@ -4,6 +4,7 @@ import System.Exit
 import XMonad.Util.Run
 import XMonad.Util.SpawnOnce
 import XMonad.Hooks.ManageDocks
+import Graphics.X11.ExtraTypes.XF86
 
 import qualified XMonad.StackSet as W
 import qualified Data.Map        as M
@@ -33,11 +34,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- launch a terminal
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
-    -- launch dmenu
-    , ((modm,               xK_p     ), spawn "dmenu_run")
+    -- launch menu 
+    , ((modm,               xK_p     ), spawn "rofi -show run")
 
-    -- launch gmrun
-    , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
+    -- launch menu (for desktop applications) 
+    , ((modm .|. shiftMask, xK_p     ), spawn "rofi -show drun")
 
     -- close focused window
     , ((modm .|. shiftMask, xK_c     ), kill)
@@ -120,6 +121,12 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
         , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
     ++
     
+    -- multimedia keys 
+    [  ((modm, xK_F3), spawn "pulseaudio-ctl up")
+     , ((modm, xK_F2), spawn "pulseaudio-ctl down")
+     , ((modm, xK_F1), spawn "pulseaudio-ctl mute")]
+
+    ++
     -- utils
     [((modm, xK_Print), spawn "flameshot gui"),
      ((modm .|. shiftMask, xK_l), spawn "xscreensaver-command -lock")]
@@ -161,10 +168,12 @@ myLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
 
 
 myManageHook = composeAll
-    [ className =? "MPlayer"        --> doFloat
-    , className =? "Gimp"           --> doFloat
-    , resource  =? "desktop_window" --> doIgnore
-    , resource  =? "kdesktop"       --> doIgnore ]
+    [ className =? "MPlayer"            --> doFloat
+    , className =? "Gimp"               --> doFloat
+    , className =? "awakened-poe-trade" --> doFloat
+    , className =? "telegram-desktop"   --> doFloat
+    , resource  =? "desktop_window"     --> doIgnore
+    , resource  =? "kdesktop"           --> doIgnore ]
 
 
 myEventHook = mempty
@@ -179,7 +188,7 @@ myStartupHook = do
 
 
 main = do 
-  xmproc <- spawnPipe "xmobar $HOME/.config/xmobar/xmobarrc"
+  xmproc <- spawnPipe "xmobar -x 1 $HOME/.config/xmobar/xmobarrc"
   xmonad $ docks defaults
 
 

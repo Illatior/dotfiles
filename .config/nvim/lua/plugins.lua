@@ -56,6 +56,13 @@ packer.startup(function(use)
     requires = { 'kyazdani42/nvim-web-devicons', opt = true }
   })
 
+  -- Start screen
+  use({
+    "startup-nvim/startup.nvim",
+    requires = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" },
+    config = get_config("startup")
+  })
+
   -- GIT-related plugins 
   use({
     "lewis6991/gitsigns.nvim",

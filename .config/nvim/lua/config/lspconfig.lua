@@ -4,6 +4,7 @@ local lsp_buf = vim.lsp.buf
 local servers = {
   "gopls",
   "sumneko_lua",
+  "rust_analyzer",
 }
 
 local on_attach = function(client, bufnr)
