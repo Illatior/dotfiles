@@ -1,2 +1,7 @@
 *
+
 !.xmonad
+!.config/xmonad
+!.config/xmobar
+!.config/nvim
+!.config/alacritty
