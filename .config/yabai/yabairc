@@ -1,0 +1,44 @@
+# yabai startup configuration with sa
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+
+# actual config
+yabai -m config layout bsp
+
+yabai -m config window_placement second_child
+
+yabai -m config top_padding 6
+yabai -m config bottom_padding 6
+yabai -m config left_padding 6
+yabai -m config right_padding 6
+yabai -m config window_gap 6
+
+yabai -m config focus_follows_mouse autoraise
+yabai -m config mouse_follows_focus off 
+
+yabai -m config window_topmost on
+yabai -m config window_shadow off
+
+yabai -m config mouse_modifier alt
+yabai -m config mouse_action1 move
+yabai -m config mouse_action2 resize
+
+yabai -m mouse_drop_action swap
+
+# disable app - yabai -m rule --add app="^.....$" manage=off
+yabai -m rule --add app="^System Settings$" manage=off
+yabai -m rule --add app="^Finder$" manage=off
+yabai -m rule --add app="^OpenVPN Connect$" manage=off
+yabai -m rule --add app="^Raycast Settings$" manage=off
+yabai -m rule --add app="^Raycast Settings$" manage=off
+yabai -m rule --add app="^TextEdit$" manage=off
+yabai -m rule --add app="^Activity Monitor$" manage=off
+yabai -m rule --add app="^Steam$" manage=off
+yabai -m rule --add app="^App Store$" manage=off
+yabai -m rule --add app="^Installer$" manage=off
+yabai -m rule --add app="^Notes$" manage=off
+yabai -m rule --add app="^Steam$" manage=off
+yabai -m rule --add app="^Logitech G HUB$" manage=off
+
+yabai -m rule --add app="^Firefox Nightly$" manage=on
+yabai -m rule --add app="^World of Warcraft$" manage=on
