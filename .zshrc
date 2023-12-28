@@ -39,6 +39,7 @@ alias vim="nvim"
 alias python="python3"
 alias dc="docker-compose"
 alias code="codium"
+alias tmux="tmux -u"
 
 alias grep="grep --color=auto"
 

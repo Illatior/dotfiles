@@ -1,38 +1,30 @@
 return {
     "lewis6991/gitsigns.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
+    lazy = false,
+    keys = {
+        { "<leader>gbt", "<cmd>Gitsigns toggle_current_line_blame<cr>", desc = "[G]it [B]lame [T]oggle" },
+    },
     opts = {
         signs = {
             add = {
-                hl = "GitSignsAdd",
                 text = "│",
-                numhl = "GitSignsAddNr",
-                linehl = "GitSignsAddLn"
             },
             change = {
-                hl = "GitSignsChange",
                 text = "│",
-                numhl = "GitSignsChangeNr",
-                linehl = "GitSignsChangeLn"
             },
             delete = {
-                hl = "GitSignsDelete",
                 text = "_",
-                numhl = "GitSignsDeleteNr",
-                linehl = "GitSignsDeleteLn"
             },
             topdelete = {
-                hl = "GitSignsDelete",
                 text = "‾",
-                numhl = "GitSignsDeleteNr",
-                linehl = "GitSignsDeleteLn"
             },
             changedelete = {
-                hl = "GitSignsChange",
                 text = "~",
-                numhl = "GitSignsChangeNr",
-                linehl = "GitSignsChangeLn"
-            }
+            },
+            untracked = {
+                text = "┆",
+            },
         },
         signcolumn = true,
         numhl = false,
@@ -42,7 +34,16 @@ return {
         attach_to_untracked = true,
 
         current_line_blame = false,
-        current_line_blame_formatter_opts = {relative_time = false},
+        current_line_blame_opts = {
+            virt_text = true,
+            virt_text_pos = 'eol', -- 'eol' | 'overlay' | 'right_align'
+            delay = 1000,
+            ignore_whitespace = false,
+            virt_text_priority = 100,
+        },
+        current_line_blame_formatter_opts = {
+            relative_time = false
+        },
         sign_priority = 6,
         update_debounce = 100,
         status_formatter = nil,

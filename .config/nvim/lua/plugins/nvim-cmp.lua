@@ -61,11 +61,11 @@ return {
                 -- end, { 'i', 's' }),
             },
             sources = {
-                { name = 'path' },
-                { name = 'cmdline' },
-                { name = 'luasnip' },
                 { name = 'nvim_lsp' },
+                { name = 'luasnip' },
                 { name = 'buffer' },
+                { name = 'path' },
+                -- { name = 'cmdline' },
             },
         }
 

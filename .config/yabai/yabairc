@@ -39,6 +39,7 @@ yabai -m rule --add app="^Installer$" manage=off
 yabai -m rule --add app="^Notes$" manage=off
 yabai -m rule --add app="^Steam$" manage=off
 yabai -m rule --add app="^Logitech G HUB$" manage=off
+yabai -m rule --add app="^Godot$" manage=off
 
 yabai -m rule --add app="^Firefox Nightly$" manage=on
 yabai -m rule --add app="^World of Warcraft$" manage=on

@@ -38,6 +38,7 @@ return { 'neovim/nvim-lspconfig',
             },
             solidity_ls_nomicfoundation = {},
             pylsp = {},
+            -- godot = {},
         }
 
         local on_attach = function(_, bufnr)
@@ -79,11 +80,18 @@ return { 'neovim/nvim-lspconfig',
                 vim.lsp.buf.code_action,
                 { noremap = true, buffer = bufnr, silent = true, desc = "lsp [c]ode [a]ctions"}
             )
-
-            nmap("<leader>rs", ":LspRestart<CR>", "restart lsp")
         end
+        vim.keymap.set("n", "<leader>rs", ":LspRestart<CR>", { noremap = true, silent = true, desc = "restart lsp" })
+
 
         local lsp = require('lspconfig')
+        vim.tbl_extend('keep', lsp, {
+            godot = {
+                cmd = {},
+                filetypes = ''
+            }
+        })
+
         local capabilities = require('cmp_nvim_lsp').default_capabilities()
         for server, server_opts in pairs(servers) do
             local opts = {

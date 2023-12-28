@@ -31,14 +31,13 @@ return {
                         ['<C-p>'] = false,
                         ['<C-k>'] = actions.move_selection_previous,
 
-                        ['<C-q>'] = actions.send_selected_to_qflist + actions.open_qflist,
+                        ['<C-w>'] = actions.send_selected_to_qflist + actions.open_qflist,
                     },
                 },
             },
         }
 
         telescope.load_extension('fzf')
-
 
         vim.keymap.set('n', '<leader>ff', function() require('telescope.builtin').find_files() end, { desc = "[F] Search [F]iles" })
         vim.keymap.set('n', '<leader>fs', function() require('telescope.builtin').git_files() end, { desc = "[F] Search Git files"})
