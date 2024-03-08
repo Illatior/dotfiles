@@ -57,7 +57,7 @@ return { 'neovim/nvim-lspconfig',
             nmap("gD", vim.lsp.buf.declaration, "[g]oto [D]eclaration")
             nmap("gi", "<cmd>Telescope lsp_implementations<CR>", "[g]oto [i]mplementation")
             nmap("go", "<cmd>Telescope lsp_type_definitions", "[g]oto type definition")
-            nmap("<C-k>", vim.lsp.buf.signature_help, "signature help")
+            nmap("<C-s>", vim.lsp.buf.signature_help, "signature help")
             nmap("gf", "<cmd>Telescope lsp_references<CR>", "[g]oto references")
             nmap("K",  vim.lsp.buf.hover, "hover documentation")
             nmap("<leader>vws", vim.lsp.buf.workspace_symbol, "workspace symbol")
