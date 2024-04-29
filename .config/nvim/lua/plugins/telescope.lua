@@ -39,14 +39,22 @@ return {
 
         telescope.load_extension('fzf')
 
-        vim.keymap.set('n', '<leader>ff', function() require('telescope.builtin').find_files() end, { desc = "[F] Search [F]iles" })
-        vim.keymap.set('n', '<leader>fs', function() require('telescope.builtin').git_files() end, { desc = "[F] Search Git files"})
-        vim.keymap.set('n', '<leader>fh', function() require('telescope.builtin').help_tags() end, { desc = "[F] Search [H]elp"})
-        vim.keymap.set('n', '<leader>fg', function() require('telescope.builtin').live_grep() end, { desc = "[F] Search with live [G]rep"})
-        vim.keymap.set('n', '<leader>fd', function() require('telescope.builtin').diagnostics() end, { desc = "[F] Search [D]iagnostics"})
-        vim.keymap.set('n', '<leader>fr',function() require('telescope.builtin').resume()  end, { desc = "[F] Search [R]esume"})
-        vim.keymap.set('n', '<leader>?', function() require('telescope.builtin').oldfiles() end, { desc = "[?] Search recetly opened files"})
-        vim.keymap.set('n', '<leader><space>', function() require('telescope.builtin').buffers() end, { desc = "[ ] Search existing buffers"})
+        vim.keymap.set('n', '<leader>ff', function() require('telescope.builtin').find_files() end,
+            { desc = "[F] Search [F]iles" })
+        vim.keymap.set('n', '<leader>fs', function() require('telescope.builtin').git_files() end,
+            { desc = "[F] Search Git files" })
+        vim.keymap.set('n', '<leader>fh', function() require('telescope.builtin').help_tags() end,
+            { desc = "[F] Search [H]elp" })
+        vim.keymap.set('n', '<leader>fg', function() require('telescope.builtin').live_grep() end,
+            { desc = "[F] Search with live [G]rep" })
+        vim.keymap.set('n', '<leader>fd', function() require('telescope.builtin').diagnostics() end,
+            { desc = "[F] Search [D]iagnostics" })
+        vim.keymap.set('n', '<leader>fr', function() require('telescope.builtin').resume() end,
+            { desc = "[F] Search [R]esume" })
+        vim.keymap.set('n', '<leader>?', function() require('telescope.builtin').oldfiles() end,
+            { desc = "[?] Search recetly opened files" })
+        vim.keymap.set('n', '<leader><space>', function() require('telescope.builtin').buffers() end,
+            { desc = "[ ] Search existing buffers" })
         vim.keymap.set(
             'n',
             '<leader>/',
@@ -57,7 +65,7 @@ return {
                     previewer = false,
                 })
             end,
-            {desc = "[/] Fuzzily search in current buffer" }
+            { desc = "[/] Fuzzily search in current buffer" }
         )
     end,
 }

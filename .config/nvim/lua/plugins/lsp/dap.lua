@@ -89,7 +89,7 @@ return {
 
         vim.fn.sign_define('DapBreakpoint', { text = 'B' })
 
-        vim.keymap.set("n", "<leader>dtw", function ()
+        vim.keymap.set("n", "<leader>dtw", function()
             require("dapui").float_element("watches", {
                 width = 640,
                 height = 480,

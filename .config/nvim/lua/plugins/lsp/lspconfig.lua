@@ -1,9 +1,10 @@
-return { 'neovim/nvim-lspconfig',
+return {
+    'neovim/nvim-lspconfig',
     event = { 'BufReadPre', 'BufNewFile' },
     dependencies = {
-        {'hrsh7th/cmp-nvim-lsp'},
+        { 'hrsh7th/cmp-nvim-lsp' },
         { "antosha417/nvim-lsp-file-operations", config = true },
-        { 'j-hui/fidget.nvim', tag = 'legacy' },
+        { 'j-hui/fidget.nvim',                   tag = 'legacy' },
     },
     config = function()
         local servers = {
@@ -37,7 +38,6 @@ return { 'neovim/nvim-lspconfig',
                 }
             },
             solidity_ls_nomicfoundation = {},
-            pylsp = {},
             -- godot = {},
         }
 
@@ -59,11 +59,11 @@ return { 'neovim/nvim-lspconfig',
             nmap("go", "<cmd>Telescope lsp_type_definitions", "[g]oto type definition")
             nmap("<C-s>", vim.lsp.buf.signature_help, "signature help")
             nmap("gf", "<cmd>Telescope lsp_references<CR>", "[g]oto references")
-            nmap("K",  vim.lsp.buf.hover, "hover documentation")
+            nmap("K", vim.lsp.buf.hover, "hover documentation")
             nmap("<leader>vws", vim.lsp.buf.workspace_symbol, "workspace symbol")
             nmap("<leader>vd", vim.diagnostic.open_float, "open float")
             nmap("<leader>D", "<cmd>Telescope diagnostics bufnr=0<CR>", "Show lsp buffer [D]iagnistics")
-            nmap("<leader>d",vim.diagnostic.open_float, "Show [d]iagnistics for current line")
+            nmap("<leader>d", vim.diagnostic.open_float, "Show [d]iagnistics for current line")
             nmap("]d", vim.diagnostic.goto_next, "goto next")
             nmap("[d", vim.diagnostic.goto_prev, "goto prev")
             nmap("<leader>rn", vim.lsp.buf.rename, "[r]e[n]ame")
@@ -75,10 +75,10 @@ return { 'neovim/nvim-lspconfig',
                 '[W]orkspace [L]ist Folders'
             )
             vim.keymap.set(
-                {'n', 'v'},
+                { 'n', 'v' },
                 "<leader>ca",
                 vim.lsp.buf.code_action,
-                { noremap = true, buffer = bufnr, silent = true, desc = "lsp [c]ode [a]ctions"}
+                { noremap = true, buffer = bufnr, silent = true, desc = "lsp [c]ode [a]ctions" }
             )
         end
         vim.keymap.set("n", "<leader>rs", ":LspRestart<CR>", { noremap = true, silent = true, desc = "restart lsp" })

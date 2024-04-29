@@ -18,10 +18,10 @@ return {
 
         require('mason-lspconfig').setup {
             ensure_installed = {
-               'gopls',
-               'solidity_ls_nomicfoundation',
+                'gopls',
+                'solidity_ls_nomicfoundation',
                 'lua_ls',
-               'pylsp',
+                'pylsp',
             },
             automatic_installation = true,
         }

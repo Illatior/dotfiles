@@ -1,13 +1,13 @@
 return {
     'hrsh7th/nvim-cmp',
     dependencies = {
-        {'hrsh7th/cmp-buffer'},
-        {'hrsh7th/cmp-path'},
-        {'saadparwaiz1/cmp_luasnip'},
+        { 'hrsh7th/cmp-buffer' },
+        { 'hrsh7th/cmp-path' },
+        { 'saadparwaiz1/cmp_luasnip' },
         -- {'hrsh7th/cmp-nvim-lua'},
 
-        {'L3MON4D3/LuaSnip'},
-        {'rafamadriz/friendly-snippets'},
+        { 'L3MON4D3/LuaSnip' },
+        { 'rafamadriz/friendly-snippets' },
     },
     event = "InsertEnter",
     config = function()
@@ -66,6 +66,5 @@ return {
                 { name = 'path' },
             },
         }
-
     end
 }
