@@ -1,6 +1,4 @@
 export PATH="$HOME/.local/scripts:$PATH"
-# export LC_ALL=en_IN.UTF-8
-# export LANG=en_IN.UTF-8
 
 # cpp-related vars
 export CPATH="/opt/homebrew/include"
@@ -16,4 +14,3 @@ export PATH="$PATH:/Users/qwe/go/bin"
 export JAVA_HOME="/opt/homebrew/opt/openjdk@11"
 
 export PATH="$HOME/.local/scripts:$PATH"
-export LANG=c.UTF-8
