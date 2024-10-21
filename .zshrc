@@ -37,7 +37,8 @@ fi
 alias vim="nvim"
 
 alias python="python3"
-alias dc="docker-compose"
+alias dc="docker compose"
+alias dlogs="docker logs $1 -f --tail=10"
 alias code="codium"
 alias tmux="tmux -u"
 
@@ -48,6 +49,8 @@ alias openvpn-connect='"/Applications/OpenVPN Connect/OpenVPN Connect.app/Conten
 alias cp="cp -i"
 alias mv='mv -i'
 alias rm='rm -i'
+
+alias gtree='git log --oneline --graph --all'
 
 alias config='$(which git) --git-dir=$HOME/.cfg/.git --work-tree=$HOME'
 
