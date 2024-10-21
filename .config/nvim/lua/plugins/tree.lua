@@ -1,10 +1,10 @@
-return  {
+return {
     "nvim-tree/nvim-tree.lua",
     cmd = "NvimTreeToggle",
     keys = {
         { "<leader>e", ":NvimTreeToggle<CR>", "[E]xplore file tree" },
     },
-    config = function ()
+    config = function()
         vim.g.loaded = 1
         vim.g.loaded_netrwPlugin = 1
 
@@ -59,7 +59,6 @@ return  {
             vim.keymap.set('n', 's', api.node.run.system, opts('Run System'))
             vim.keymap.set('n', 'q', api.tree.close, opts('Close'))
             vim.keymap.set('n', 'g?', api.tree.toggle_help, opts('Help'))
-
         end
 
         require('nvim-tree').setup {

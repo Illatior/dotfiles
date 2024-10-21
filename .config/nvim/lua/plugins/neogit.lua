@@ -1,12 +1,18 @@
 return {
-    "TimUntersberger/neogit",
-    dependencies = { "nvim-lua/plenary.nvim" },
-    keys = {
-        { "<leader>gs", "<cmd>Neogit<cr>", desc = "[G]it [S]tatus" },
+    "NeogitOrg/neogit",
+    dependencies = {
+        "nvim-lua/plenary.nvim",  -- required
+        "sindrets/diffview.nvim", -- optional - Diff integration
+
+        -- Only one of these is needed, not both.
+        "nvim-telescope/telescope.nvim", -- optional
+        "ibhagwan/fzf-lua",              -- optional
     },
-    opts = {
-        integrations = {
-            diffview = true,
-        },
-    },
+    config = function()
+        local neogit = require("neogit")
+        neogit.setup {}
+
+
+        vim.keymap.set("n", "<leader>gs", neogit.open, { noremap = true, silent = true, desc = "[G]it [S]tatus" })
+    end
 }

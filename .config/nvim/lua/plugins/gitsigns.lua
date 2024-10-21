@@ -30,7 +30,7 @@ return {
         numhl = false,
         linehl = false,
         word_diff = false,
-        watch_gitdir = {interval = 1000, follow_files = true},
+        watch_gitdir = { interval = 1000, follow_files = true },
         attach_to_untracked = true,
 
         current_line_blame = false,
@@ -40,9 +40,6 @@ return {
             delay = 1000,
             ignore_whitespace = false,
             virt_text_priority = 100,
-        },
-        current_line_blame_formatter_opts = {
-            relative_time = false
         },
         sign_priority = 6,
         update_debounce = 100,
@@ -55,7 +52,6 @@ return {
             row = 0,
             col = 1
         },
-        diff_opts = {internal = true},
-        yadm = {enable = false}
+        diff_opts = { internal = true },
     }
 }

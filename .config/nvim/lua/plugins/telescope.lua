@@ -4,6 +4,7 @@ return {
     dependencies = {
         "nvim-lua/plenary.nvim",
         { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+        "nvim-telescope/telescope-dap.nvim",
     },
     opts = {
         defaults = {
@@ -34,10 +35,18 @@ return {
                         ['<C-w>'] = actions.send_selected_to_qflist + actions.open_qflist,
                     },
                 },
+                file_ignore_patterns = {
+                    "node_modules",
+                    "build"
+                },
             },
         }
 
         telescope.load_extension('fzf')
+        -- telescope.load_extension('dap')
+
+        vim.keymap.set('n', '<leader>K', function() require('telescope.builtin').keymaps() end,
+            { desc = "[K]eymaps" })
 
         vim.keymap.set('n', '<leader>ff', function() require('telescope.builtin').find_files() end,
             { desc = "[F] Search [F]iles" })
@@ -51,8 +60,8 @@ return {
             { desc = "[F] Search [D]iagnostics" })
         vim.keymap.set('n', '<leader>fr', function() require('telescope.builtin').resume() end,
             { desc = "[F] Search [R]esume" })
-        vim.keymap.set('n', '<leader>?', function() require('telescope.builtin').oldfiles() end,
-            { desc = "[?] Search recetly opened files" })
+        -- vim.keymap.set('n', '<leader>?', function() require('telescope.builtin').oldfiles() end,
+        --     { desc = "[?] Search recetly opened files" })
         vim.keymap.set('n', '<leader><space>', function() require('telescope.builtin').buffers() end,
             { desc = "[ ] Search existing buffers" })
         vim.keymap.set(

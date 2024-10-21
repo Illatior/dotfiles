@@ -14,8 +14,22 @@ return {
                         gofumpt = true,
                         usePlaceholders = true,
                         staticcheck = true,
+                        completeFunctionCalls = true, -- new
                         analyses = {
                             unusedparams = true,
+                            unusedvariable = true,
+                            unusedwrite = true,
+                            unusedresult = true,
+                            shadow = true,
+                        },
+                        hints = {
+                            assignVariableTypes = true,
+                            compositeLiteralFields = true,
+                            compositeLiteralTypes = true,
+                            constantValues = true,
+                            functionTypeParameters = true,
+                            parameterNames = true,
+                            rangeVariableTypes = true,
                         },
                     },
                 },
@@ -38,6 +52,10 @@ return {
                 }
             },
             solidity_ls_nomicfoundation = {},
+            tsserver = {},
+            docker_compose_language_service = {},
+            dockerls = {},
+            java_language_server = {},
             -- godot = {},
         }
 
@@ -107,6 +125,17 @@ return {
 
             lsp[server].setup(opts)
         end
+
+        -- docker-compose lsp client fix
+        local function set_filetype(pattern, filetype)
+            vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+                pattern = pattern,
+                command = "set filetype=" .. filetype,
+            })
+        end
+
+        set_filetype({ "docker-compose.yml" }, "yaml.docker-compose")
+        set_filetype({ "docker-compose.yaml" }, "yaml.docker-compose")
 
         require('fidget').setup {
             window = {
