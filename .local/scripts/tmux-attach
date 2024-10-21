@@ -1,5 +1,5 @@
-#!/bin/bash
+#!/bin/zsh
 
 if [[ -z $TMUX ]]; then
-    tmux a
+    tmux -u a
 fi

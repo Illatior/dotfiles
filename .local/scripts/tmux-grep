@@ -12,7 +12,7 @@ fi
 
 echo "attaching to $selected"
 if [[ -z $TMUX ]]; then
-    tmux attach -t $selected
+    tmux -u attach -t $selected
 else
-    tmux switch-client -t $selected
+    tmux -u switch-client -t $selected
 fi
