@@ -1,0 +1,57 @@
+{
+  "include template": {
+    "prefix": "templ",
+    "body": [
+      "{{ template \"$1\" . }}"
+    ],
+    "description": "Include HTML template"
+  },
+  "define template": {
+    "prefix": "def",
+    "body": [
+      "{{ define \"$1\" }}",
+      "{{ end }}"
+    ],
+    "description": "Create HTML template"
+  },
+  "define range template": {
+    "prefix": "range",
+    "body": [
+      "{{ range .$1 }}",
+      "{{ end }}"
+    ],
+    "description": "Create HTML range template"
+  },
+  "define val template": {
+    "prefix": "val",
+    "body": [
+      "{{ .$1 }}"
+    ],
+    "description": "Create HTML val template"
+  },
+  "define if template": {
+    "prefix": "if",
+    "body": [
+      "{{ if $1 }}",
+      "{{ end }}"
+    ],
+    "description": "Create HTML if template"
+  },
+  "define if-else template": {
+    "prefix": "ife",
+    "body": [
+      "{{ if $1 }}",
+      "{{ else }}",
+      "{{ end }}"
+    ],
+    "description": "Create HTML if-else template"
+  },
+  "define block template": {
+    "prefix": "block",
+    "body": [
+      "{{ block \"$1\" . }}",
+      "{{ end }}"
+    ],
+    "description": "Create HTML block template"
+  }
+}

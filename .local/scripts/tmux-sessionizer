@@ -12,6 +12,7 @@ else
         { 
             find "$HOME/go/src" -type d -name .git -prune -exec dirname {} \; ;
             find "$HOME/cloned" "$HOME/personal" "$HOME/personal/go" "$HOME/work" -type d -maxdepth 1 -mindepth 1 ;
+            printf "%s\n" "$HOME/.dotfiles" ;
         } | fzf)
 fi
 
