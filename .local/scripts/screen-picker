@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+CHOICE=$(
+    {
+        hyprctl monitors -j | jq -r '.[] | "\(.name)"'
+        hyprctl clients -j | jq -r '.[] | "\(.title)"'
+        echo "region: select"
+    } | walker --dmenu --placeholder "Select screen or window to share"
+)
+
+if [[ $CHOICE == *"screen"* ]]; then
+    screen=$(echo "$CHOICE" | cut -f1)
+    echo "[SELECTION]/screen:${screen}"
+elif [[ $CHOICE == *"window"* ]]; then
+    window=$(echo "$CHOICE" | cut -f1)
+    echo "[SELECTION]/${window}"
+elif [[ $CHOICE == *"region"* ]]; then
+    region=$(slurp -f "%o@%x,%y,%w,%h")
+    echo "[SELECTION]/region:${region}"
+fi

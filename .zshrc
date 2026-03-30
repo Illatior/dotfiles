@@ -1,5 +1,7 @@
 # Path to your oh-my-zsh installation.
-export ZSH="$HOME/.local/share/oh-my-zsh"
+# export ZSH="$HOME/.local/share/oh-my-zsh"
+export ZSH="$HOME/.oh-my-zsh"
+export ZSH_CUSTOM="$ZSH/custom"
 
 export EDITOR="vim"
 export VISUAL="vim"
@@ -9,7 +11,7 @@ bindkey -v
 [[ $- != *i* ]] && return
 
 # ----- brew autocompletions --------
-if type brew &>/dev/null
+if command -v brew >/dev/null 2>&1
 then
   FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
 
@@ -27,9 +29,15 @@ if [ ! -z "${GOENV_ROOT}" ]; then
 fi
 
 # ----- nvm ------
-[[ -d "${HOME}/.nvm)" ]] && export NVM_DIR="${HOME}/.nvm"
-if [ ! -z "$(brew --prefix nvm)" ]; then
-  source $(brew --prefix nvm)/nvm.sh
+export NVM_DIR="$HOME/.nvm"
+mkdir -p "$NVM_DIR"
+
+# load nvm
+if command -v brew >/dev/null 2>&1; then
+  nvm_sh="$(brew --prefix nvm 2>/dev/null)/nvm.sh"
+  [[ -s "$nvm_sh" ]] && source "$nvm_sh"
+else
+  [[ -s /usr/share/nvm/nvm.sh ]] && source /usr/share/nvm/nvm.sh
 fi
 
 # ----- Aliases ------
@@ -70,6 +78,7 @@ plugins=(
 bindkey -s ^f "tmux-sessionizer\n"
 bindkey -s ^g "tmux-grep\n"
 bindkey -s ^t "tmux-attach\n"
+bindkey -s ^v "chtsh\n"
 
 # vi-mode configuration
 VI_MODE_RESET_PROMT_ON_MODE_CHANGE=false

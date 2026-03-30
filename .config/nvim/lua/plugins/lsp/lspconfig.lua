@@ -57,7 +57,7 @@ return {
       dockerls = {},
       java_language_server = {},
       ruby_lsp = {},
-      -- godot = {},
+      gdscript = {},
     }
 
     local on_attach = function(_, bufnr)
@@ -104,12 +104,20 @@ return {
 
 
     local lsp = require('lspconfig')
-    -- vim.tbl_extend('keep', lsp, {
-    --   godot = {
-    --     cmd = {},
-    --     filetypes = ''
-    --   }
-    -- })
+    local configs = require('lspconfig.configs')
+
+    if not configs.gdscript then
+      configs.gdscript = {
+        default_config = {
+          cmd = { 'ncat', 'localhost', os.getenv 'GDScript_Port' or '6005' },
+          filetypes = { 'gdscript', 'gd' },
+          root_dir = function(fname)
+            return vim.fs.dirname(vim.fs.find({ 'project.godot', '.git' }, { upward = true, path = fname })[1])
+          end,
+          name = 'gdscript',
+        },
+      }
+    end
 
     local capabilities = require('cmp_nvim_lsp').default_capabilities()
     for server, server_opts in pairs(servers) do

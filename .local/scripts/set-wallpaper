@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+
+WALLPAPER="$1"
+awww img $WALLPAPER
+
+rm -f ~/.cache/current-wallpaper
+ln -s $WALLPAPER ~/.cache/current-wallpaper
+

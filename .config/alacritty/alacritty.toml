@@ -48,9 +48,9 @@ y = 2
 [scrolling]
 history = 20000
 
-[terminal.shell]
-args = ["-fp", "qwe"]
-program = "/usr/bin/login"
+#[terminal.shell]
+#args = ["-fp", "qwe"]
+#program = "/usr/bin/login"
 
 [window]
 opacity = 0.8

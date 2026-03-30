@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+selected=`cat ~/.cht-languages ~/.cht-commands | fzf`
+if [[ -z $selected ]]; then
+    exit 0
+fi
+
+read -p "query: " query
+
+echo "$selected"
+echo "$query"
+
+if grep -qs "$selected" ~/.cht-languages; then
+    query=`echo $query | tr ' ' '+'`
+    tmux neww -n "cht.sh/$selected/$query" bash -c "curl -s cht.sh/$selected/$query | less"
+else
+    echo $(curl -s cht.sh/$selected~$query | less)
+    tmux neww -n "cht.sh/$selected~$query" bash -c "curl -s cht.sh/$selected~$query | less"
+fi

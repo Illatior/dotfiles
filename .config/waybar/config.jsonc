@@ -1,0 +1,175 @@
+// vim:ft=jsonc
+{
+  "layer": "bottom",
+  "position": "top",
+  "margin-left": 4,
+  "margin-right": 4,
+  "margin-top": 4,
+  "margin-bottom": 0,
+  "spacing": 1,
+  "reload_style_on_change": true,
+
+  // Choose the order of the modules
+
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+
+  "modules-center": ["clock"],
+
+  "modules-right": [
+    "tray",
+    "bluetooth",
+    "network",
+    "cpu",
+    "memory",
+    "temperature",
+    "backlight",
+    "hyprland/language",
+    "wireplumber",
+    "custom/power",
+  ],
+
+  "tray": {
+    "icon-size": 16,
+    "spacing": 10,
+    "show-passive-items": true,
+    "reverse-direction": true,
+  },
+
+  "clock": {
+    "interval": 60,
+    "format": "  {:%I:%M %p}", // %b %d %Y  --Date formatting
+    "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>",
+    "format-alt": " {:%a %b %d}",
+  },
+
+  "temperature": {
+    "critical-threshold": 80,
+    "interval": 2,
+    "format": " {temperatureC:>2}°C",
+    "format-icons": ["", "", ""],
+  },
+
+  "cpu": {
+    "interval": 2,
+    "format": "  {usage:>2}%",
+  },
+
+  "memory": {
+    "interval": 2,
+    "format": "  {used:0.1f}G/{total:0.1f}G",
+  },
+
+  "disk": {
+    "interval": 15,
+    "format": "󰋊 {percentage_used:>2}%",
+  },
+
+  "backlight": {
+    // "device": "acpi_video1",
+    "format": "{icon} {percent:>2}%",
+    "format-icons": ["", "", "", "", "", "", "", "", ""],
+  },
+
+  "network": {
+    // "interface": "wlp2*", // (Optional) To force the use of this interface
+    "interval": 1,
+    "format-wifi": " {bandwidthTotalBytes:>2}", //({essid} {signalStrength}%)
+    "format-ethernet": " {bandwidthTotalBytes:>2}",
+    "tooltip-format-ethernet": "󰈀 {ipaddr}",
+    "tooltip-format-wifi": "  {essid} ({signalStrength}%)",
+    "tooltip-format": "󰤯 {ifname} via {gwaddr}",
+    "format-linked": "󰀦 {ifname} (No IP)",
+    "format-disconnected": "󰀦 Disconnected", //Disconnected ⚠
+    "format-alt": "{ifname}: {gwaddr}/{cidr}",
+  },
+
+  "hyprland/language": {
+    "format": "{}",
+    "format-en": "🇺🇸",
+    "format-uk": "🇺🇦",
+  },
+
+  "pulseaudio": {
+    // "scroll-step": 1, // %, can be a float
+    "format": "{icon} {volume}%", //{format_source}",
+    "format-bluetooth": "{icon} {volume}% 󰂯", //{format_source}",
+    "format-bluetooth-muted": "󰖁 {icon} 󰂯", //{format_source}",
+    "format-muted": "󰖁 {volume}%",
+    // "format-source": " {volume}%",
+    // "format-source-muted": "",
+    "format-icons": {
+      "headphone": "󰋋",
+      "hands-free": "󱡒",
+      "headset": "󰋎",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", "", ""],
+    },
+    "on-click": "pavucontrol",
+  },
+
+  "wireplumber": {
+    "format": "{icon} {volume:>3}%",
+    "format-muted": "󰖁 {volume:>3}%",
+    "format-icons": ["", "", ""],
+    "on-click": "pavucontrol",
+  },
+
+  "bluetooth": {
+    "format": " {status}",
+    "format-connected": " {device_alias}",
+    "format-connected-battery": " {device_alias} {device_battery_percentage}%",
+    "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
+    "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+    "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
+    "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_address}\t{device_battery_percentage}%",
+  },
+
+  "custom/power": {
+    "format": "{icon}",
+    "format-icons": "", //  
+    "exec-on-event": "true",
+    "on-click": "systemctl poweroff",
+    "tooltip-format": "Power Menu",
+  },
+
+  "custom/kdeconnect": {
+    "format": "{icon}",
+    "format-icons": "",
+    "exec-on-event": "true",
+    "on-click": "kdeconnect-app",
+    "tooltip-format": "KDE Connect",
+  },
+
+  "custom/bluetooth": {
+    "format": "{icon}",
+    "format-icons": "",
+    "exec-on-event": "true",
+    "on-click": "$HOME/scripts/rofi-bluetooth",
+    "tooltip-format": "Bluetooth Menu",
+  },
+
+  "custom/separator": {
+    "format": "{icon}",
+    "format-icons": "|",
+    "tooltip": false,
+  },
+
+  "custom/temp": {
+    "format": "{}",
+    "interval": 1,
+    "exec": "$HOME/scripts/temp",
+    "return-type": "json",
+    "tooltip": true,
+  },
+
+  "custom/pacman": {
+    "format": "  {}",
+    "interval": 3600, // every hour
+    "exec": "checkupdates | wc -l", // # of updates
+    "exec-if": "exit 0", // always run; consider advanced run conditions
+    "on-click": "foot -e 'sudo pacman -Syu'; pkill -SIGRTMIN+8 waybar", // update system
+    "signal": 8,
+  },
+}
