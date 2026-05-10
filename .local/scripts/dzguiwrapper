@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+source $HOME/.virtualenvs/dzgui/bin/activate
+$HOME/.local/scripts/dzgui.sh
