@@ -50,7 +50,7 @@ return {
         }
         dap_virtualtext.setup()
         dapgo.setup()
-        require('nvim-dap-repl-highlights').setup()
+        -- require('nvim-dap-repl-highlights').setup()
 
         -- dapui.eval = function(exp)
         --     local session = dap.session()

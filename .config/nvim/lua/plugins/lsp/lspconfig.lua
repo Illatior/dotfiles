@@ -39,13 +39,14 @@ return {
           Lua = {
             -- make the language server recognize "vim" global
             diagnostics = {
-              globals = { "vim" },
+              globals = { "vim", "hl" },
             },
             workspace = {
               -- make language server aware of runtime files
               library = {
                 [vim.fn.expand("$VIMRUNTIME/lua")] = true,
                 [vim.fn.stdpath("config") .. "/lua"] = true,
+                ["/usr/share/hypr/stubs"] = true,
               },
             },
           }
@@ -103,7 +104,7 @@ return {
     vim.keymap.set("n", "<leader>rs", ":LspRestart<CR>", { noremap = true, silent = true, desc = "restart lsp" })
 
 
-    local lsp = require('lspconfig')
+    local lsp = vim.lsp.config
     local configs = require('lspconfig.configs')
 
     if not configs.gdscript then
@@ -132,7 +133,9 @@ return {
         opts.settings = server_opts.settings
       end
 
-      lsp[server].setup(opts)
+      -- lsp[server].setup(opts)
+      vim.lsp.config(server, opts)
+      vim.lsp.enable(server)
     end
 
     -- docker-compose lsp client fix
