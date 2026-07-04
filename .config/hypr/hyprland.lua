@@ -53,7 +53,7 @@ end)
 
 hl.on('hyprland.start', function()
   hl.exec_cmd('[workspace 1 silent] steam')
-  hl.exec_cmd('[workspace special:magic magic] Telegram')
+  hl.exec_cmd('[workspace special:magic] Telegram')
   hl.exec_cmd('[workspace 3 silent] zen-browser')
   hl.exec_cmd('[workspace 4 silent] discord')
 end)
@@ -260,6 +260,15 @@ bind_exec("XF86AudioPause", "playerctl play-pause")
 bind_exec("XF86AudioPlay", "playerctl play-pause")
 
 
+hl.bind(mainMod .. '+ SHIFT + T', hl.dsp.window.tag({ tag = "half_transparent" }))
+
+--- custom tags
+hl.window_rule({
+  match   = { tag = "half_transparent" },
+  opacity = "0.5 override",
+})
+---
+
 
 
 
@@ -294,5 +303,18 @@ hl.window_rule {
   match = { class = "^(steam_app_[0-9]+|gamescope)$" },
   idle_inhibit = 'always',
 }
+
+hl.window_rule {
+  name = "zoom-annotate-toolbar-floating",
+  match = { title = "^annotate_toolbar$" },
+  float = true,
+}
+hl.window_rule {
+  name = "zoom-initial-title-floating",
+  match = { title = "^Zoom Workplace$" },
+  float = true,
+}
+
+-- hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP", { exec_once = true })
 
 -- hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP", { exec_once = true })

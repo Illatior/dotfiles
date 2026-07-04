@@ -14,3 +14,6 @@ export GOPRIVATE="github.com/simcord-llc/*"
 
 export PATH="$HOME/.local/scripts:$PATH"
 # export TERM=alacritty
+
+
+export PATH="$HOME/.cargo/bin:$PATH"

@@ -101,7 +101,7 @@ return {
         { noremap = true, buffer = bufnr, silent = true, desc = "lsp [c]ode [a]ctions" }
       )
     end
-    vim.keymap.set("n", "<leader>rs", ":LspRestart<CR>", { noremap = true, silent = true, desc = "restart lsp" })
+    vim.keymap.set("n", "<leader>rs", ":lsp restart<CR>", { noremap = true, silent = true, desc = "restart lsp" })
 
 
     local lsp = vim.lsp.config
