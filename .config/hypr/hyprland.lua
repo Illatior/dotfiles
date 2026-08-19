@@ -41,21 +41,16 @@ hl.on('hyprland.start', function()
   hl.exec_cmd("awww-daemon")
   hl.exec_cmd("solaar -w hide")
   hl.exec_cmd("wl-paste --watch cliphist store")
+  hl.exec_cmd("hyprsunset")
   hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
 end)
 
--- hl.on('hyprland.start', function()
---   hl.exec_cmd('steam', { workspace = '1' })
---   hl.exec_cmd('Telegram', { workspace = 'special:magic' })
---   hl.exec_cmd('zen-browser', { workspace = '3' })
---   hl.exec_cmd('discord', { workspace = '4' })
--- end)
-
 hl.on('hyprland.start', function()
-  hl.exec_cmd('[workspace 1 silent] steam')
-  hl.exec_cmd('[workspace special:magic] Telegram')
-  hl.exec_cmd('[workspace 3 silent] zen-browser')
-  hl.exec_cmd('[workspace 4 silent] discord')
+  hl.exec_cmd("steam")
+  hl.exec_cmd("Telegram")
+  hl.exec_cmd("zen-browser")
+  hl.exec_cmd("discord")
+  hl.exec_cmd("spotify")
 end)
 
 hl.on('hyprland.start', function() -- remove after hyprland fixes stuck cursor on launch
@@ -202,6 +197,20 @@ local function toggle_special(space, opts)
   end
 end
 
+local function adjust_gamma(values)
+  local i = 1
+
+  --- TODO: add error handling
+  return function()
+    i = i + 1
+    if i > #values then
+      i = 1
+    end
+
+    hl.exec_cmd(string.format("hyprctl hyprsunset gamma %d", values[i]))
+  end
+end
+
 bind_exec('code:191', "hyprctl switchxkblayout current next")
 
 for i = 1, 10 do
@@ -226,6 +235,8 @@ bind_exec(mainMod .. '+ V', "cliphist list | wofi --dmenu | cliphist decode | wl
 -- bind = $mainMod, W, togglegroup
 -- bind = $mainMod, Tab, changegroupactive, f
 -- bind = $mainMod SHIFT, Tab, changegroupactive, b
+
+hl.bind(mainMod .. '+ N', adjust_gamma({ 100, 200 }))
 
 hl.bind(mainMod .. '+ LEFT', hl.dsp.focus({ direction = 'left' }))
 hl.bind(mainMod .. '+ H', hl.dsp.focus({ direction = 'left' }))
@@ -273,6 +284,32 @@ hl.window_rule({
 
 
 hl.window_rule({
+  name = "ws-steam",
+  match = { class = '^steam$' },
+  workspace = '1',
+})
+hl.window_rule({
+  name = "ws-telegram",
+  match = { class = '^org\\.telegram\\.desktop$' },
+  workspace = 'special:magic',
+})
+hl.window_rule({
+  name = "ws-zen",
+  match = { class = '^zen$' },
+  workspace = '3',
+})
+hl.window_rule({
+  name = "ws-discord",
+  match = { class = '^discord$' },
+  workspace = '4',
+})
+hl.window_rule({
+  name = "ws-music",
+  match = { class = '^Spotify$' },
+  workspace = 'special:music',
+})
+
+hl.window_rule({
   name = "suppress-maximize-events",
   match = { class = '.*' },
   suppress_event = 'maximize'
@@ -302,6 +339,12 @@ hl.window_rule {
   name = "prevent-steam-apps-from-being-stopped",
   match = { class = "^(steam_app_[0-9]+|gamescope)$" },
   idle_inhibit = 'always',
+}
+
+hl.window_rule {
+  name = "open-steam-apps-on-1",
+  match = { class = "^(steam_app_[0-9]+|gamescope)$" },
+  workspace = '1',
 }
 
 hl.window_rule {

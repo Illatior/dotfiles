@@ -70,9 +70,9 @@ return {
             open_on_tab = true,
             hijack_cursor = true,
             update_cwd = true,
-            -- filters = {
-            --   dotfiles = false,
-            -- },
+            filters = {
+                custom = { "\\.gd\\.uid$" },
+            },
 
             trash = { cmd = "trash-put", require_confirm = true }, -- TODO fixme
 

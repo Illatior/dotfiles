@@ -36,7 +36,8 @@ return {
         },
         file_ignore_patterns = {
           "node_modules",
-          "build"
+          "build",
+          "%.gd%.uid$"
         },
       },
     }

@@ -8,7 +8,7 @@ return {
       install_dir = vim.fn.stdpath('data') .. '/site',
     }
 
-    ts.install { 'c', 'cpp', 'lua', 'go', 'gomod', 'gosum', 'gowork', 'java', 'json', 'javascript', 'make', 'proto', 'python', 'rust', 'ruby', 'sql', 'toml', 'yaml' }
+    ts.install { 'c', 'cpp', 'lua', 'go', 'gomod', 'gosum', 'gowork', 'java', 'json', 'javascript', 'make', 'proto', 'python', 'rust', 'ruby', 'sql', 'toml', 'yaml', 'gdscript' }
 
     vim.api.nvim_create_autocmd('FileType', {
       callback = function()
