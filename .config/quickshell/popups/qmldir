@@ -1,0 +1,11 @@
+PopupLayer 1.0 PopupLayer.qml
+NotificationCard 1.0 NotificationCard.qml
+MediaCard 1.0 MediaCard.qml
+AudioPopup 1.0 AudioPopup.qml
+NetworkPopup 1.0 NetworkPopup.qml
+BluetoothPopup 1.0 BluetoothPopup.qml
+LightsPopup 1.0 LightsPopup.qml
+VpnPopup 1.0 VpnPopup.qml
+ControlCenter 1.0 ControlCenter.qml
+ControlCenterMain 1.0 ControlCenterMain.qml
+NotificationToast 1.0 NotificationToast.qml

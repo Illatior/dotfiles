@@ -1,0 +1,34 @@
+#!/bin/bash
+
+set -e 
+
+TMP_DIR="${XDG_RUNTIME_DIR:-/tmp}/screenshots"
+mkdir -p "$TMP_DIR"
+
+FILE="$TMP_DIR/screenshot-$(date +%Y%m%d-%H%M%S).png"
+
+case "$1" in
+    window)
+        GEOMETRY="$(hyprctl activewindow -j | jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"')"
+        ;;
+    area)
+        GEOMETRY="$(slurp)"
+        ;;
+    *)
+        echo "Usage: $0 {window|area}"
+        exit 1
+        ;;
+esac
+
+grim -g "$GEOMETRY" "$FILE"
+wl-copy < "$FILE"
+
+id="$(notify-send \
+    --app-name "Screenshot" \
+    --icon "$FILE" \
+    --print-id \
+    "Screenshot taken" \
+    "Screenshot was copied to clipboard."
+)"
+
+printf '%s\n' "$FILE" > "$TMP_DIR/$id"

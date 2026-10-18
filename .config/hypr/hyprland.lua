@@ -1,48 +1,27 @@
-hl.monitor({
-  output = 'DP-1',
-  mode = '2560x1440@165',
-  position = '0x0',
-  scale = 1,
-})
-
-hl.monitor({
-  output = 'HDMI-A-2',
-  mode = '1920x1080@60',
-  position = '2560x0',
-  scale = 1,
-})
-
-hl.workspace_rule({
-  workspace = '1',
-  monitor = 'DP-1',
-})
-hl.workspace_rule({
-  workspace = '2',
-  monitor = 'DP-1',
-})
-hl.workspace_rule({
-  workspace = '3',
-  monitor = 'HDMI-A-2',
-})
-hl.workspace_rule({
-  workspace = '4',
-  monitor = 'HDMI-A-2',
-})
+-- Monitors and workspace rules live in conf/hyprland/ so the Quickshell
+-- settings widget can restate them: each module reads its overrides from
+-- conf/generated/shell_settings.lua (written by the widget, gitignored) and
+-- declares the full spec, so a reload turns monitors back on as well as off.
+require('conf.hyprland.monitors')
+require('conf.hyprland/workspaces')
 
 local mainMod = 'SUPER'
 
 local terminal = "alacritty"
 local fileManager = "dolphin"
-local menu = "toggle-wofi"
+-- local menu = "toggle-wofi"
+local menu = "walker"
 
 hl.on('hyprland.start', function()
   hl.exec_cmd("$HOME/.local/scripts/update-env tmux")
-  hl.exec_cmd("waybar")
+  -- hl.exec_cmd("waybar")
+  hl.exec_cmd("qs")
   hl.exec_cmd("awww-daemon")
   hl.exec_cmd("solaar -w hide")
   hl.exec_cmd("wl-paste --watch cliphist store")
   hl.exec_cmd("hyprsunset")
   hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
+  hl.exec_cmd("walker --gapplication-service")
 end)
 
 hl.on('hyprland.start', function()
@@ -81,10 +60,13 @@ hl.env("HYPRCURSOR_SIZE", 24)
 --   mode = 'allow',
 -- })
 
+-- Gaps, opacities, rounding, blur and animations are NOT set here: they are
+-- owned by the Quickshell settings widget, which applies them live and persists
+-- them to conf/generated/shell_settings.lua. conf/shell_settings.lua applies
+-- that file below. Until the shell has written it once, Hyprland's own
+-- defaults apply.
 hl.config({
   general = {
-    gaps_in = 4,
-    gaps_out = 10,
     border_size = 2,
     col = {
       active_border = "rgb(7daea3)",
@@ -94,15 +76,9 @@ hl.config({
     allow_tearing = false,
     layout = 'dwindle',
   },
-  animations = {
-    enabled = false,
-  },
 
   decoration = {
-    rounding = 10,
     rounding_power = 2,
-    active_opacity = 1.0,
-    inactive_opacity = 1.0,
     shadow = {
       enabled = true,
       range = 4,
@@ -110,9 +86,6 @@ hl.config({
       color = "rgba(1a1a1aee)",
     },
     blur = {
-      enabled = true,
-      size = 3,
-      passes = 1,
       vibrancy = 0.1696,
     },
   },
@@ -144,6 +117,12 @@ hl.config({
     },
   },
 })
+
+-- Applies the gaps/opacity/blur/animation values the Quickshell settings
+-- widget persists. Required after every hl.config above so its values win; the
+-- widget's own defaults (gaps 5/10, opacities 1.0/0.9, blur 8/2, animations on)
+-- apply until you change them in the widget.
+require('conf.shell_settings')
 
 local function bind_exec(keys, fun)
   hl.bind(keys, hl.dsp.exec_cmd(fun))
@@ -228,15 +207,38 @@ bind_exec(mainMod .. '+ E', fileManager)
 hl.bind(mainMod .. '+ T', hl.dsp.window.float({ action = 'toggle' }))
 hl.bind(mainMod .. '+ SHIFT + M', hl.dsp.window.fullscreen({ active = 'toggle' }))
 -- hl.bind(mainMod .. '+ P', hl.dsp.window.pseudo())
-bind_exec(mainMod .. '+ P', 'grim -g "$(slurp -d)" - | wl-copy')
-bind_exec(mainMod .. '+ SHIFT + P', 'grim -g "$(slurp)" - | swappy -f -')
-bind_exec(mainMod .. '+ V', "cliphist list | wofi --dmenu | cliphist decode | wl-copy")
+
+bind_exec(mainMod .. '+ P', '~/.local/scripts/screenshot window')
+bind_exec(mainMod .. '+ SHIFT + P', '~/.local/scripts/screenshot area')
+
+-- Clipboard history lives in the shell's island widget rather than a wofi
+-- dmenu, so pick/paste is one keystroke instead of a list plus a copy.
+hl.bind(mainMod .. '+ V', hl.dsp.exec_cmd("qs ipc call island toggle clipboard"))
 
 -- bind = $mainMod, W, togglegroup
 -- bind = $mainMod, Tab, changegroupactive, f
 -- bind = $mainMod SHIFT, Tab, changegroupactive, b
 
 hl.bind(mainMod .. '+ N', adjust_gamma({ 100, 200 }))
+
+-- Magnifier: SUPER+= steps the zoom in around the cursor, SUPER+- steps it
+-- back out, Escape drops it entirely. Hyprland only renders cursor zoom on the
+-- monitor under the pointer, so the other screen stays untouched. Escape is
+-- only bound while zoomed so apps keep it the rest of the time.
+local zoom_steps = { 1, 2, 4, 8 }
+local zoom_index = 1
+local zoom_escape
+
+local function set_zoom(index)
+  zoom_index = math.max(1, math.min(index, #zoom_steps))
+  hl.config({ cursor = { zoom_factor = zoom_steps[zoom_index] } })
+  zoom_escape:set_enabled(zoom_index > 1)
+end
+
+hl.bind(mainMod .. '+ equal', function() set_zoom(zoom_index + 1) end)
+hl.bind(mainMod .. '+ minus', function() set_zoom(zoom_index - 1) end)
+zoom_escape = hl.bind('Escape', function() set_zoom(1) end)
+zoom_escape:set_enabled(false)
 
 hl.bind(mainMod .. '+ LEFT', hl.dsp.focus({ direction = 'left' }))
 hl.bind(mainMod .. '+ H', hl.dsp.focus({ direction = 'left' }))
@@ -336,14 +338,15 @@ hl.window_rule({
 })
 
 hl.window_rule {
-  name = "prevent-steam-apps-from-being-stopped",
+  name = "unfocused-steam-games-fix",
   match = { class = "^(steam_app_[0-9]+|gamescope)$" },
   idle_inhibit = 'always',
+  render_unfocused = true,
 }
 
 hl.window_rule {
   name = "open-steam-apps-on-1",
-  match = { class = "^(steam_app_[0-9]+|gamescope)$" },
+  match = { class = "^(steam_app_[0-9]+|gamescope|steam_proton)$" },
   workspace = '1',
 }
 

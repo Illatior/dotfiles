@@ -59,6 +59,19 @@ return {
       java_language_server = {},
       ruby_lsp = {},
       gdscript = {},
+      clangd = {
+        cmd = {
+          "clangd",
+          "--background-index",
+          "--clang-tidy",
+          "--completion-style=detailed",
+          "--header-insertion=iwyu",
+        },
+        init_options = {
+          clangdFileStatus = true,
+        },
+      },
+      qmlls = {},
     }
 
     local on_attach = function(_, bufnr)
