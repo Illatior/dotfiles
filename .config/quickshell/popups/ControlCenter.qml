@@ -175,7 +175,11 @@ PanelWindow {
     Shortcut {
         sequence: "Escape"
         enabled: root.open
-        onActivated: ShellState.ccPage === "main" ? ShellState.closeAll() : ShellState.back()
+        onActivated: {
+            if (mainPage.powerOpen) mainPage.powerOpen = false
+            else if (ShellState.ccPage === "main") ShellState.closeAll()
+            else ShellState.back()
+        }
     }
 
     // Click-outside dismissal; only reachable while open (see mask).
@@ -271,7 +275,7 @@ PanelWindow {
             enabled: root.open
 
             Page { name: "main"; sub: false
-                ControlCenterMain { width: parent.width; height: Theme.ccHeight }
+                ControlCenterMain { id: mainPage; width: parent.width; height: Theme.ccHeight }
             }
             Page { name: "network"
                 NetworkPopup { width: parent.width; embedded: true }

@@ -53,7 +53,7 @@ history = 20000
 #program = "/usr/bin/login"
 
 [window]
-opacity = 0.8
+opacity = 1.0 # 0.8
 option_as_alt = "OnlyLeft"
 
 [keyboard]

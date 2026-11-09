@@ -1,0 +1,69 @@
+[user]
+	email = aquamarineasf@gmail.com
+	name = qwe
+
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+
+[diff]
+    tool = nvimdiff
+[difftool]
+    prompt = false
+
+[merge]
+    tool = nvimdiff
+[mergetool]
+    prompt = false
+    keepBackup = false
+
+
+[core]
+    editor = nvim
+
+[filter "lfs"]
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+
+[color]
+    ui = true
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+[color "status"]
+    added = green bold
+    changed = cyan
+    untracked = magenta reverse
+
+[alias]
+	s = -c color.status=always status -sb
+    df = difftool
+    mt = mergetool
+	state = "!f(){ \
+				deco_bold='\\x1b[1m'; \
+				deco_invert='\\x1b[7m'; \
+				git_status=$(git -c color.status=always status -sb); \
+				git_lfs_valid=$(git lfs status --porcelain); \
+				echo \"$git_status\"; \
+				if [[ -n \"$git_lfs_valid\" ]]; then \
+					git_lfs_status=$(git -c color.status=always lfs status); \
+					divider='\n------- git-lfs status -------\\x1b[00m'; \
+					echo -e \"${deco_bold}${deco_invert}$divider\n\"; \
+					echo \"$git_lfs_status\"; \
+				fi; \
+			}; \
+			f"
+ 	deletebranch = !sh -c 'git branch -d $1 | git push origin --delete $1' -
+	lard = "!git rev-list --all --objects | sed -n $(git rev-list --objects --all | cut -f1 -d' ' | git cat-file --batch-check | grep blob | sort -n -k 3 | tail -n40 | while read hash type size; do echo -n \"-e s/$hash/$size/p \"; done) | sort -n -k1"
+	last = log -1 HEAD
+	uncommit = git reset --soft HEAD^
+	prettylog =  "!git log --pretty=format:'%C(yellow)%h|%Cred%ad|%Cblue%an|%Cgreen%d %Creset%s' --date=short | column -ts'|' | less -r"
+	tree = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	holy-fsck = fsck --full --strict -v --progress

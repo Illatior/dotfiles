@@ -8,7 +8,8 @@ require('conf.hyprland/workspaces')
 local mainMod = 'SUPER'
 
 local terminal = "alacritty"
-local fileManager = "dolphin"
+-- local fileManager = "dolphin"
+local fileManager = "thunar"
 -- local menu = "toggle-wofi"
 local menu = "walker"
 
@@ -20,12 +21,12 @@ hl.on('hyprland.start', function()
   hl.exec_cmd("solaar -w hide")
   hl.exec_cmd("wl-paste --watch cliphist store")
   hl.exec_cmd("hyprsunset")
-  hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
+  -- hl.exec_cmd("/usr/lib/polkit-kde-authentication-agent-1")
   hl.exec_cmd("walker --gapplication-service")
 end)
 
 hl.on('hyprland.start', function()
-  hl.exec_cmd("steam")
+  hl.exec_cmd("env MANGOHUD=1 steam") -- MangoHud in every Vulkan/Proton game, hidden until Shift_R+F12
   hl.exec_cmd("Telegram")
   hl.exec_cmd("zen-browser")
   hl.exec_cmd("discord")
@@ -101,6 +102,7 @@ hl.config({
   misc = {
     force_default_wallpaper = 0,
     disable_hyprland_logo = true,
+    on_focus_under_fullscreen = 1,
   },
 })
 
@@ -271,6 +273,11 @@ bind_exec("XF86AudioNext", "playerctl next")
 bind_exec("XF86AudioPrev", "playerctl previous")
 bind_exec("XF86AudioPause", "playerctl play-pause")
 bind_exec("XF86AudioPlay", "playerctl play-pause")
+
+hl.bind(mainMod .. '+ Tab', function()
+  hl.dispatch(hl.dsp.window.cycle_next())
+  hl.dispatch(hl.dsp.window.alter_zorder({ mode = "top" }))
+end)
 
 
 hl.bind(mainMod .. '+ SHIFT + T', hl.dsp.window.tag({ tag = "half_transparent" }))

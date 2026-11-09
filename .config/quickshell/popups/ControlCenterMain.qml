@@ -20,6 +20,60 @@ Item {
     implicitWidth: Theme.ccWidth
     implicitHeight: Theme.ccHeight
 
+    // ── Power menu ──────────────────────────────────────────────────────────
+    // The header's power button opens the session actions in place. Reboot
+    // and power off take two clicks, like the island's Power widget: the
+    // first arms the button, any other action (or closing the menu) disarms.
+    property bool   powerOpen: false
+    property string armed: ""
+    property string hoveredAction: ""
+
+    readonly property var powerActions: [
+        { id: "lock",      label: "Lock",      glyph: "" },
+        { id: "logout",    label: "Log Out",   glyph: "" },
+        { id: "reboot",    label: "Reboot",    glyph: "", confirm: "reboot" },
+        { id: "power-off", label: "Power Off", glyph: "", confirm: "power off" }
+    ]
+
+    readonly property int  powerGap: 8
+    readonly property int  powerSpan: powerActions.length * (power.size + powerGap)
+
+    property real powerProgress: powerOpen ? 1 : 0
+    Behavior on powerProgress { NumberAnimation { duration: Theme.animDuration; easing.type: Easing.OutCubic } }
+
+    // The header title: the hovered action's name, else the armed action's
+    // prompt, else the panel's own title.
+    readonly property var  hoveredInfo: powerOpen && hoveredAction !== "" && hoveredAction !== armed
+                                        ? actionById(hoveredAction) : null
+    readonly property bool prompting: armed !== "" && hoveredInfo === null
+
+    onPowerOpenChanged: { armed = ""; hoveredAction = "" }
+
+    // Starts closed every time the panel opens, and on every page switch.
+    Connections {
+        target: ShellState
+        function onControlCenterOpenChanged() { root.powerOpen = false }
+        function onCcPageChanged() { root.powerOpen = false }
+    }
+
+    function actionById(id) {
+        for (var i = 0; i < powerActions.length; i++)
+            if (powerActions[i].id === id) return powerActions[i]
+        return null
+    }
+
+    function invokePower(id) {
+        if (actionById(id).confirm && armed !== id) {
+            armed = id
+            return
+        }
+        ShellState.closeAll()
+        if (id === "lock")        PowerService.lock()
+        else if (id === "logout") PowerService.logout()
+        else if (id === "reboot") PowerService.reboot()
+        else                      PowerService.powerOff()
+    }
+
     Column {
         id: column
         anchors {
@@ -30,8 +84,8 @@ Item {
         }
         spacing: 10
 
-        // Tile grid: Wi-Fi and Bluetooth share the wider left column; the two
-        // cells to their right hold Audio + Lights, then Peace + Night Light.
+        // Tile grid: Wi-Fi and Bluetooth share the wider left column; to their
+        // right, Audio spans both cells, then Peace + Night Light.
         readonly property real sideWidth: Math.round((width - spacing) * 0.38)
         readonly property real cellWidth: (width - sideWidth - spacing * 2) / 2
 
@@ -50,27 +104,73 @@ Item {
                 onActivated: ShellState.closeAll()
             }
 
+            // The power menu's buttons are glyphs only, so while it is open
+            // the title names the one under the pointer, or asks to confirm.
             Text {
-                anchors { left: close.right; leftMargin: 12; right: power.left; rightMargin: 12
+                anchors { left: close.right; leftMargin: 12; right: power.left
+                          rightMargin: 12 + root.powerSpan * root.powerProgress
                           verticalCenter: parent.verticalCenter }
-                text: "Control Center"
-                color: Theme.text
+                text: root.hoveredInfo ? root.hoveredInfo.label
+                    : root.prompting ? "Click again to " + root.actionById(root.armed).confirm
+                    : "Control Center"
+                color: root.prompting ? Theme.success : Theme.text
                 font.family: Theme.fontFamily
                 font.pixelSize: 17
                 elide: Text.ElideRight
             }
 
-            // Session power menu, in the header's right corner. It lives in the
-            // island rather than the panel, so opening it hands over: the
-            // control center closes and the island shows the Power widget.
+            // Session power menu, in the header's right corner. The actions
+            // slide out leftwards from behind the power button; clipped at
+            // its left edge so they appear from under it, and opaque so the
+            // fanned-out stack reads as cards rather than overlapping tints.
+            Item {
+                id: powerMenu
+                anchors { right: power.left; top: parent.top; bottom: parent.bottom }
+                width: root.powerSpan
+                clip: true
+
+                Repeater {
+                    model: root.powerActions
+
+                    delegate: IconButton {
+                        required property var modelData
+                        required property int index
+                        readonly property bool armed: root.armed === modelData.id
+                        // Slot 1 sits next to the power button.
+                        readonly property int slot: root.powerActions.length - index
+
+                        x: powerMenu.width - slot * (size + root.powerGap) * root.powerProgress
+                        anchors.verticalCenter: parent.verticalCenter
+                        size: power.size
+                        glyph: armed ? "\uf00c" : modelData.glyph
+                        glyphSize: 11
+                        glyphColor: armed ? Theme.crust : Theme.text
+                        color: armed ? Theme.success
+                             : Qt.tint(Theme.barBg, hovered ? Theme.hover : Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.06))
+                        opacity: Math.min(1, root.powerProgress * 1.5)
+                        visible: opacity > 0
+                        enabled: root.powerOpen
+
+                        onHoveredChanged: {
+                            if (hovered) root.hoveredAction = modelData.id
+                            else if (root.hoveredAction === modelData.id) root.hoveredAction = ""
+                        }
+                        onActivated: root.invokePower(modelData.id)
+                    }
+                }
+            }
+
             IconButton {
                 id: power
                 anchors { right: parent.right; verticalCenter: parent.verticalCenter }
                 size: 34
-                glyph: "\uf011"
+                // Open, it points right: the way the actions fold back in.
+                glyph: root.powerOpen ? "\uf054" : "\uf011"
                 glyphSize: 11
-                color: hovered ? Theme.hover : Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.06)
-                onActivated: ShellState.openWidget("power", false)
+                glyphColor: root.powerOpen ? Theme.accent : Theme.text
+                color: root.powerOpen ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.18)
+                     : hovered ? Theme.hover : Qt.rgba(Theme.text.r, Theme.text.g, Theme.text.b, 0.06)
+                onActivated: root.powerOpen = !root.powerOpen
             }
         }
 
@@ -96,25 +196,13 @@ Item {
             }
 
             QuickTile {
-                width: column.cellWidth
+                width: parent.width - column.sideWidth - parent.spacing
                 glyph: AudioService.glyph
                 title: "Audio"
                 subtitle: AudioService.muted ? "Muted" : (AudioService.sinkName || "No output")
                 active: !AudioService.muted
                 onToggled: AudioService.toggleMute()
                 onOpened: ShellState.showPage("audio")
-            }
-
-            // The glyph flips between `off` and the last profile that wasn't.
-            QuickTile {
-                width: column.cellWidth
-                glyph: "\uf0eb"
-                title: "Lights"
-                subtitle: !RgbService.available ? "Unavailable"
-                        : RgbService.on ? RgbService.active : "Off"
-                active: RgbService.on
-                onToggled: RgbService.toggle()
-                onOpened: ShellState.showPage("lights")
             }
         }
 

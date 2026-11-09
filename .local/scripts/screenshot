@@ -23,12 +23,14 @@ esac
 grim -g "$GEOMETRY" "$FILE"
 wl-copy < "$FILE"
 
-id="$(notify-send \
+action="$(notify-send \
     --app-name "Screenshot" \
     --icon "$FILE" \
-    --print-id \
+    --action "default=Edit" \
     "Screenshot taken" \
     "Screenshot was copied to clipboard."
 )"
 
-printf '%s\n' "$FILE" > "$TMP_DIR/$id"
+if [[ "$action" == "default" ]]; then
+    exec "$(dirname "$0")/screenshot-edit" "$FILE"
+fi

@@ -2,30 +2,17 @@
 
 set -e
 
-TMP_DIR="${XDG_RUNTIME_DIR:-/tmp}/screenshots"
-id="${1:-}"
+file="${1:-}"
 
-if [[ -z "$id" ]]; then
-    exit 1
-fi
-
-mapping="$TMP_DIR/$id"
-if [[ ! -f "$mapping" ]] then
-    notify-send \
-        --app-name "Screenshot" \
-        "Screenshot unavailable" \
-        "The temporary screenshot no longer exists."
-fi
-
-file="$(cat "$mapping")"
 if [[ ! -f "$file" ]]; then
     notify-send \
         --app-name "Screenshot" \
         "Screenshot unavailable" \
         "The temporary screenshot no longer exists."
+    exit 1
 fi
 
-edited="$TMP_DIR/edited-$file.png"
+edited="${file%.png}-edited.png"
 
 swappy -f "$file" -o "$edited"
 
@@ -33,9 +20,7 @@ if [[ -f "$edited" ]]; then
     wl-copy --type image/png < "$edited"
     notify-send \
         --app-name "Screenshot" \
-        --icon "$edited"
+        --icon "$edited" \
         "Screenshot edited" \
         "Edited screenshot was copied to the clipboard."
-
-    mv "$edited" "$file"
 fi

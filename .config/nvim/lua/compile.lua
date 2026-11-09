@@ -1,21 +1,47 @@
--- Emacs-style M-x compile. Each project (git root, or cwd) remembers its own
--- shell command across sessions. Output goes to a *compilation* pane at the
--- bottom, which closes when the command exits (<leader>co reopens it), and is
--- parsed into the quickfix list, so ]q / [q walk the errors.
--- Compiler-style "file:line:col:" errors and Godot "(res://file:line)" ones.
---
--- In the *compilation* buffer: <CR> jump to error, r rerun, <C-c> stop, q close
 local M = {}
+
+local config = {
+  history = 10, -- per project
+}
 
 local store = vim.fn.stdpath("data") .. "/compile-commands.json"
 local ns = vim.api.nvim_create_namespace("compile")
 local buf, job, last
+local launch -- runs a command and remembers it, defined below run()
 
+function M.setup(opts)
+  config = vim.tbl_extend("force", config, opts or {})
+end
+
+-- { [root] = { default = cmd, saved = { { cmd = cmd, name = name? } }, history = { newest cmd, ... } } }
 local function read_store()
   local ok, data = pcall(function()
     return vim.json.decode(table.concat(vim.fn.readfile(store), "\n"))
   end)
   return ok and data or {}
+end
+
+local function project(data, root)
+  local p = data[root] or {}
+  if type(p) == "string" then
+    p = { default = p, history = { p } }
+  end
+  p.saved = p.saved or {}
+  p.history = p.history or {}
+  return p
+end
+
+local function get(root)
+  return project(read_store(), root)
+end
+
+local function update(root, fn)
+  local data = read_store()
+  local p = project(data, root)
+  fn(p)
+  data[root] = (p.default or #p.saved > 0 or #p.history > 0) and p or nil
+  vim.fn.mkdir(vim.fs.dirname(store), "p")
+  vim.fn.writefile(vim.split(vim.json.encode(data, { indent = "  " }), "\n"), store)
 end
 
 local function project_root()
@@ -31,7 +57,6 @@ local function set_lines(start, lines)
   vim.bo[buf].modifiable = false
 end
 
--- follow the output, unless the user is in the window looking around
 local function append(lines)
   set_lines(-1, lines)
   local win = vim.fn.bufwinid(buf)
@@ -40,12 +65,8 @@ local function append(lines)
   end
 end
 
--- the first line is a make-style "Entering directory" message, so 'errorformat'
--- resolves relative paths against the compile dir, not nvim's cwd
 local function parse(lines)
   local items = vim.fn.getqflist({ lines = lines, efm = vim.go.errorformat }).items
-  -- %f matches almost anything, e.g. "built (2026-08-17 01:18:38 UTC)" reads as
-  -- file "built (2026-08-17 01", line 18, so only trust files that exist
   for _, item in ipairs(items) do
     if item.valid == 1 and vim.fn.filereadable(vim.api.nvim_buf_get_name(item.bufnr)) == 0 then
       item.valid = 0
@@ -54,18 +75,11 @@ local function parse(lines)
   return items
 end
 
--- Godot error locations look like "   at: helper (res://scenes/main.gd:11)".
--- Rewrite them to "scenes/main.gd:11: <msg>", which 'errorformat' understands.
--- res:// is the project root, assumed to be the compile dir.
 local function godot_line(line, msg)
   local file, lnum = line:match("%(res://(.-):(%d+)%)%s*$")
   return file and ("%s:%s: %s"):format(file, lnum, msg or line)
 end
 
--- A Godot error is a "KIND: message" line followed by indented lines, where
--- the first res:// one is the script location (for push_error that's the [0]
--- backtrace frame, the "at:" line points into Godot's C++). Give each error a
--- single quickfix entry with that location and the message.
 local function qf_lines(lines)
   local out, header = {}, nil
   for i, line in ipairs(lines) do
@@ -82,8 +96,6 @@ local function qf_lines(lines)
   return out
 end
 
--- jump to the location on this line, or on the indented lines below it, so
--- <CR> also works on a Godot "ERROR: ..." line
 local function jump()
   local row = vim.api.nvim_win_get_cursor(0)[1]
   local lines = { vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] }
@@ -112,12 +124,11 @@ local function get_buf()
 
   local opts = { buffer = buf, nowait = true }
   vim.keymap.set("n", "<CR>", jump, opts)
-  vim.keymap.set("n", "r", function() M.recompile() end, opts)
+  vim.keymap.set("n", "r", function() launch(last.cwd, last.cmd) end, opts)
   vim.keymap.set("n", "<C-c>", function() M.stop() end, opts)
   vim.keymap.set("n", "q", "<cmd>close<cr>", opts)
 end
 
--- header: command on the left (truncated first), run status on the right
 local function update_bar()
   local win = vim.fn.bufwinid(buf)
   if win == -1 then return end
@@ -128,14 +139,12 @@ end
 local function show()
   if vim.fn.bufwinid(buf) == -1 then
     local win = vim.api.nvim_open_win(buf, false, { split = "below", win = -1, height = 15 })
-    -- setlocal, so a split made from this window doesn't inherit the look
     local wo = vim.wo[win][0]
     wo.number = false
     wo.relativenumber = false
     wo.signcolumn = "no"
     wo.colorcolumn = ""
     wo.fillchars = "eob: "
-    -- own background, so the pane doesn't blend into the code or the cmdline
     wo.winhighlight = "Normal:NormalFloat,WinBar:StatusLine,WinBarNC:StatusLine"
   end
   update_bar()
@@ -156,7 +165,6 @@ local function run(cmd, cwd)
     cwd = cwd,
     on_stdout = function(_, data)
       if id ~= job then return end
-      -- data[1] continues the previous chunk's unfinished line
       data[1] = partial .. data[1]
       partial = table.remove(data)
       for i, line in ipairs(data) do
@@ -178,7 +186,8 @@ local function run(cmd, cwd)
         msg, last.hl, level = "Compilation finished", "DiagnosticOk", vim.log.levels.INFO
         last.status = ("✓ finished (%.2fs)"):format(secs)
       else
-        msg, last.hl, level = ("Compilation exited abnormally with code %d"):format(code), "DiagnosticError", vim.log.levels.ERROR
+        msg, last.hl, level = ("Compilation exited abnormally with code %d"):format(code), "DiagnosticError",
+            vim.log.levels.ERROR
         last.status = ("✗ exit %d (%.2fs)"):format(code, secs)
       end
       msg = ("%s (%.2fs)"):format(msg, secs)
@@ -189,27 +198,22 @@ local function run(cmd, cwd)
       })
       update_bar()
 
-      -- errors only: in a list without valid entries :cnext walks every entry,
-      -- and the full output is in the pane anyway
       local items = vim.iter(parse(qf_lines(vim.api.nvim_buf_get_lines(buf, 0, -1, false))))
           :filter(function(i) return i.valid == 1 end)
           :totable()
       local errors = #items
-      -- ]q moves past the current entry, which starts as the first one, so
-      -- lead with a text-only entry to have ]q land on the first error
       if errors > 0 then
         table.insert(items, 1, { text = "compile: " .. cmd, valid = 0 })
       end
       vim.fn.setqflist({}, " ", { title = cmd, items = items })
 
-      -- get out of the way (<leader>co brings it back), unless the user is in
-      -- the pane reading it
       local win = vim.fn.bufwinid(buf)
-      if win ~= -1 and win ~= vim.api.nvim_get_current_win() then
+      if win ~= -1 and (last.stopped or win ~= vim.api.nvim_get_current_win()) then
         pcall(vim.api.nvim_win_close, win, false)
       end
       vim.notify(
-        ("compile: %s%s"):format(last.status, errors > 0 and (", %d error%s"):format(errors, errors == 1 and "" or "s") or ""),
+        ("compile: %s%s"):format(last.status,
+          errors > 0 and (", %d error%s"):format(errors, errors == 1 and "" or "s") or ""),
         level
       )
     end,
@@ -217,31 +221,151 @@ local function run(cmd, cwd)
   job = id
 end
 
-local function save_and_run(root, cmd)
-  local cmds = read_store()
-  cmds[root] = cmd
-  vim.fn.mkdir(vim.fs.dirname(store), "p")
-  vim.fn.writefile({ vim.json.encode(cmds) }, store)
+launch = function(root, cmd, make_default)
+  update(root, function(p)
+    if make_default or not p.default then p.default = cmd end
+    local history = vim.tbl_filter(function(c) return c ~= cmd end, p.history)
+    table.insert(history, 1, cmd)
+    p.history = vim.list_slice(history, 1, config.history)
+  end)
   run(cmd, root)
 end
 
--- prompt for this project's command (prefilled with the current one), then run
-function M.compile()
-  local root = project_root()
-  local opts = { prompt = "Compile command: ", default = read_store()[root] or "", kind = "compile" }
-  vim.ui.input(opts, function(cmd)
-    if cmd and cmd ~= "" then save_and_run(root, cmd) end
+local function input(default, on_cmd)
+  vim.ui.input({ prompt = "Compile command: ", default = default, kind = "compile" }, function(cmd)
+    if cmd and cmd ~= "" then on_cmd(cmd) end
   end)
 end
 
--- run this project's command, asking for it the first time
-function M.recompile()
+function M.compile()
   local root = project_root()
-  local cmd = read_store()[root]
-  if cmd then run(cmd, root) else M.compile() end
+  input(get(root).default or "", function(cmd) launch(root, cmd, true) end)
 end
 
--- stop the running command
+function M.recompile()
+  local root = project_root()
+  local cmd = get(root).default
+  if cmd then launch(root, cmd) else M.compile() end
+end
+
+local function finder(root)
+  local p = get(root)
+  local items, seen, width = {}, {}, 0
+  local function add(cmd, saved, name)
+    if seen[cmd] then return end
+    seen[cmd] = true
+    table.insert(items, { cmd = cmd, saved = saved, name = name })
+    width = math.max(width, vim.fn.strdisplaywidth(name or ""))
+  end
+  for _, s in ipairs(p.saved) do add(s.cmd, true, s.name) end
+  if p.default then add(p.default) end
+  for _, cmd in ipairs(p.history) do add(cmd) end
+
+  local columns = { { width = 1 }, { width = 1 } }
+  if width > 0 then table.insert(columns, { width = width }) end
+  table.insert(columns, { remaining = true })
+  local displayer = require("telescope.pickers.entry_display").create({ separator = " ", items = columns })
+
+  return require("telescope.finders").new_table({
+    results = items,
+    entry_maker = function(item)
+      return {
+        value = item,
+        ordinal = (item.name or "") .. " " .. item.cmd,
+        display = function()
+          local row = {
+            item.cmd == p.default and { "●", "DiagnosticOk" } or " ",
+            item.saved and { "★", "DiagnosticWarn" } or " ",
+          }
+          if width > 0 then table.insert(row, { item.name or "", "Title" }) end
+          table.insert(row, item.cmd)
+          return displayer(row)
+        end,
+      }
+    end,
+  })
+end
+
+function M.pick(root)
+  root = root or project_root()
+  local actions = require("telescope.actions")
+  local state = require("telescope.actions.state")
+  local opts = require("telescope.themes").get_dropdown({
+    previewer = false,
+    prompt_title = "Compile in " .. vim.fn.fnamemodify(root, ":~"),
+    results_title = "<CR> run  <C-e> edit  <C-d> default  <C-s> save  <C-x> remove",
+  })
+
+  require("telescope.pickers").new(opts, {
+    finder = finder(root),
+    sorter = require("telescope.config").values.generic_sorter({}),
+    attach_mappings = function(prompt_bufnr, map)
+      local function selected()
+        local entry = state.get_selected_entry()
+        return entry and entry.value or { cmd = vim.trim(state.get_current_line()) }
+      end
+      local function refresh()
+        state.get_current_picker(prompt_bufnr):refresh(finder(root), { reset_prompt = false })
+      end
+      local function close_then(fn)
+        actions.close(prompt_bufnr)
+        vim.schedule(fn)
+      end
+
+      actions.select_default:replace(function()
+        local cmd = selected().cmd
+        if cmd ~= "" then close_then(function() launch(root, cmd) end) end
+      end)
+      map({ "i", "n" }, "<C-e>", function()
+        local cmd = selected().cmd
+        close_then(function() input(cmd, function(c) launch(root, c) end) end)
+      end)
+      map({ "i", "n" }, "<C-d>", function()
+        local entry = state.get_selected_entry()
+        if not entry then return end
+        update(root, function(p) p.default = entry.value.cmd end)
+        refresh()
+      end)
+      map({ "i", "n" }, "<C-s>", function()
+        local entry = state.get_selected_entry()
+        if not entry then return end
+        local item = entry.value
+        close_then(function()
+          vim.ui.input({ prompt = "Name (optional): ", default = item.name or "", kind = "compile" }, function(name)
+            if name then
+              update(root, function(p)
+                local s = vim.iter(p.saved):find(function(x) return x.cmd == item.cmd end)
+                if not s then
+                  s = { cmd = item.cmd }
+                  table.insert(p.saved, s)
+                end
+                name = vim.trim(name)
+                s.name = name ~= "" and name or nil
+              end)
+            end
+            M.pick(root)
+          end)
+        end)
+      end)
+      map({ "i", "n" }, "<C-x>", function()
+        local entry = state.get_selected_entry()
+        if not entry then return end
+        local cmd = entry.value.cmd
+        update(root, function(p)
+          if entry.value.saved then
+            p.saved = vim.tbl_filter(function(s) return s.cmd ~= cmd end, p.saved)
+            return
+          end
+          p.history = vim.tbl_filter(function(c) return c ~= cmd end, p.history)
+          if p.default == cmd then p.default = nil end
+        end)
+        refresh()
+      end)
+      return true
+    end,
+  }):find()
+end
+
 function M.stop()
   if not job then
     return vim.notify("compile: nothing running")
@@ -250,7 +374,6 @@ function M.stop()
   vim.fn.jobstop(job)
 end
 
--- show or hide the output pane of the last run
 function M.toggle()
   local win = buf and vim.fn.bufwinid(buf) or -1
   if win ~= -1 then
@@ -263,12 +386,13 @@ function M.toggle()
 end
 
 vim.api.nvim_create_user_command("Compile", function(o)
-  if o.args == "" then M.compile() else save_and_run(project_root(), o.args) end
+  if o.args == "" then M.compile() else launch(project_root(), o.args, true) end
 end, { nargs = "*" })
 vim.api.nvim_create_user_command("Recompile", M.recompile, {})
 
-vim.keymap.set("n", "<leader>cc", M.recompile, { desc = "[C]ompile: run project command" })
-vim.keymap.set("n", "<leader>ce", M.compile, { desc = "[C]ompile: [E]dit command and run" })
+vim.keymap.set("n", "<leader>cc", M.recompile, { desc = "[C]ompile: run project default command" })
+vim.keymap.set("n", "<leader>ce", M.compile, { desc = "[C]ompile: [E]dit default command and run" })
+vim.keymap.set("n", "<leader>cp", function() M.pick() end, { desc = "[C]ompile: [P]ick a project command" })
 vim.keymap.set("n", "<leader>co", M.toggle, { desc = "[C]ompile: toggle [O]utput pane" })
 vim.keymap.set("n", "<leader>cq", M.stop, { desc = "[C]ompile: [Q]uit running command" })
 
