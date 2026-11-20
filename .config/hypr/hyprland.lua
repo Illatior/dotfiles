@@ -28,9 +28,11 @@ end)
 hl.on('hyprland.start', function()
   hl.exec_cmd("env MANGOHUD=1 steam") -- MangoHud in every Vulkan/Proton game, hidden until Shift_R+F12
   hl.exec_cmd("Telegram")
-  hl.exec_cmd("zen-browser")
+  -- hl.exec_cmd("zen-browser")
+  hl.exec_cmd("librewolf")
   hl.exec_cmd("discord")
-  hl.exec_cmd("spotify")
+  -- hl.exec_cmd("spotify")
+  hl.exec_cmd("gtk-launch youtube-music-desktop")
 end)
 
 hl.on('hyprland.start', function() -- remove after hyprland fixes stuck cursor on launch
@@ -103,6 +105,7 @@ hl.config({
     force_default_wallpaper = 0,
     disable_hyprland_logo = true,
     on_focus_under_fullscreen = 1,
+    focus_on_activate = true,
   },
 })
 
@@ -308,6 +311,11 @@ hl.window_rule({
   workspace = '3',
 })
 hl.window_rule({
+  name = "ws-librewolf",
+  match = { class = '^librewolf$' },
+  workspace = '3',
+})
+hl.window_rule({
   name = "ws-discord",
   match = { class = '^discord$' },
   workspace = '4',
@@ -315,6 +323,11 @@ hl.window_rule({
 hl.window_rule({
   name = "ws-music",
   match = { class = '^Spotify$' },
+  workspace = 'special:music',
+})
+hl.window_rule({
+  name = "ws-music",
+  match = { class = '^qtws$', title = "^Youtube Music$" },
   workspace = 'special:music',
 })
 
